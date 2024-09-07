@@ -1,13 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { AITimeSlotRecommendation } from "@/components/AITimeSlotRecommendation"
-import { useUser } from "@clerk/nextjs"
+import { useState } from 'react'
+import { AITimeSlotRecommendation } from "../components/AITimeSlotRecomendations"
 
 interface Service {
     id: number
@@ -22,7 +21,6 @@ interface ScheduleFormProps {
 }
 
 export default function ScheduleForm({ services, tenant }: Readonly<ScheduleFormProps>) {
-    const { user } = useUser()
     const [date, setDate] = useState<Date | undefined>(new Date())
     const [selectedServices, setSelectedServices] = useState<number[]>([])
     const [name, setName] = useState<string>('')

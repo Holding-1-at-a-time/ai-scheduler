@@ -22,7 +22,7 @@ export function AITimeSlotRecommendation({
     selectedServices,
     services,
     onSelectSlot
-}: AITimeSlotRecommendationProps) {
+}: Readonly<AITimeSlotRecommendationProps>) {
     const [recommendedSlots, setRecommendedSlots] = useState<string[]>([])
 
     useEffect(() => {
