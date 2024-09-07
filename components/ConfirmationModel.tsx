@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Confetti from 'react-confetti'
+import { Confetti} from 'react-confetti'
 import { Button } from "@/components/ui/button"
 
 export function ConfirmationModal({
     isOpen,
     onClose,
     appointmentDetails
-}: {
+}: Readonly<{
     isOpen: boolean
     onClose: () => void
     appointmentDetails: {
@@ -18,7 +18,7 @@ export function ConfirmationModal({
         services: string[]
         totalPrice: number
     }
-}) {
+}>) {
     const [windowSize, setWindowSize] = useState({
         width: typeof window !== 'undefined' ? window.innerWidth : 0,
         height: typeof window !== 'undefined' ? window.innerHeight : 0,

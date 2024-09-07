@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 
-export function FeedbackForm({ onSubmit }: { onSubmit: (feedback: any) => void }) {
+export function FeedbackForm({ onSubmit }: Readonly<{ onSubmit: (feedback: any) => void }>) {
     const [rating, setRating] = useState<string>('')
     const [comment, setComment] = useState<string>('')
 

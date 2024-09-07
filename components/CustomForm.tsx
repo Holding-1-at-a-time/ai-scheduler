@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-export function CustomerForm({ onSubmit }: { onSubmit: (data: any) => void }) {
+export function CustomerForm({ onSubmit }: Readonly<{ onSubmit: (data: any) => void }>) {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -26,6 +26,16 @@ export function CustomerForm({ onSubmit }: { onSubmit: (data: any) => void }) {
         onSubmit(formData)
     }
 
+    const getInputType = (key: string) => {
+        if (key === 'email') {
+            return 'email';
+        }
+        if (key === 'phone') {
+            return 'tel';
+        }
+        return 'text';
+    };
+
     return (
         <Card className="bg-[#707070]/50 border-[#0AE98]/20">
             <CardHeader>
@@ -39,7 +49,7 @@ export function CustomerForm({ onSubmit }: { onSubmit: (data: any) => void }) {
                                 {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
                             </Label>
                             <Input
-                                type={key === 'email' ? 'email' : key === 'phone' ? 'tel' : 'text'}
+                                type={getInputType(key)}
                                 id={key}
                                 name={key}
                                 value={value}

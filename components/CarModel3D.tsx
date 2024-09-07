@@ -16,13 +16,15 @@ export function CarModel3D() {
 
     if (!isClient) return null
 
+    const hemisphereLightProps = { args: [0xffffff, 0x000000, 0.5] };
+    
     return (
         <div className="w-full h-64">
             <Canvas camera={{ position: [0, 0, 5] }}>
-                <ambientLight args={[0xffffff, 0.5]} />
-                <hemisphereLight intensity={0.5} />
-                <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-                <pointLight position={[-10, -10, -10]} />
+                <ambientLight color={[0xffffff, 0.5]} />
+                <hemisphereLight {...hemisphereLightProps} />
+                <spotLight ref={[10, 10, 10]} />
+                <pointLight ref={[-10, -10, -10]} />
                 <Suspense fallback={null}>
                     <Model />
                 </Suspense>

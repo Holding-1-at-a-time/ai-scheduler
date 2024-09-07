@@ -7,14 +7,14 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "./ui/alert-dialog"
 
 export function ConfirmationModal({
     isOpen,
     onClose,
     onConfirm,
     appointmentDetails
-}: {
+}: Readonly<{
     isOpen: boolean
     onClose: () => void
     onConfirm: () => void
@@ -24,7 +24,7 @@ export function ConfirmationModal({
         services: string[]
         totalPrice: number
     }
-}) {
+}>) {
     return (
         <AlertDialog open={isOpen}>
             <AlertDialogContent>

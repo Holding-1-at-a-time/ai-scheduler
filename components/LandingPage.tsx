@@ -5,14 +5,27 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useMutation } from 'convex/react';
 import { api } from '../convex/_generated/api';
+
+// Add the potentialClients property to the api object
+const apiWithPotentialClients = {
+    ...api,
+    potentialClients: {
+        submitPotentialClientData: () => { } // Replace this with the actual implementation
+    }
+};
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { toast } from '@/components/ui/use-toast';
 import PricingTier from './PricingTier';
 import FutureCard from './FutureCard';
+import { CalendarIcon, ClockIcon, UsersIcon, SparklesIcon, BarchartIcon } from "@/public/Icons"
+
+
+function validateEmail(email: string) {
+const submitPotentialClient = useMutation(apiWithPotentialClients.potentialClients.submitPotentialClientData);
+import { Toast } from './ui/toast';
 
 export default function LandingPage() {
     const [email, setEmail] = useState('');
@@ -25,18 +38,18 @@ export default function LandingPage() {
         e.preventDefault();
 
         if (!validateEmail(email)) {
-            toast({
+            Toast({
                 title: "Invalid email",
-                description: "Please enter a valid email address.",
+                "aria-description": "Please enter a valid email address.",
                 variant: "destructive",
             });
             return;
         }
 
         if (!businessSize) {
-            toast({
+            Toast({
                 title: "Business size required",
-                description: "Please select your business size.",
+                "aria-describedby": "Please select your business size.",
                 variant: "destructive",
             });
             return;
@@ -45,14 +58,14 @@ export default function LandingPage() {
         try {
             await submitPotentialClient({ email, businessSize });
             setShowPricing(true);
-            toast({
+            Toast({
                 title: "Thank you!",
-                description: "We've received your information. Here are our pricing options.",
+                "aria-description": "We've received your information. Here are our pricing options.",
             });
         } catch (error) {
-            toast({
+            Toast({
                 title: "Submission failed",
-                description: error.message || "An error occurred. Please try again.",
+                "aria-description": error.message || "An error occurred. Please try again.",
                 variant: "destructive",
             });
         }
@@ -95,27 +108,30 @@ export default function LandingPage() {
 
                     <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
                         <FutureCard
-                            icon="Calendar"
+                            icon={<CalendarIcon />}
+                            title="Your Title"
+                            description="Your Description"
+                        />
                             title="Smart Scheduling"
                             description="AI-powered scheduling optimizes your appointments for maximum efficiency."
                         />
                         <FutureCard
-                            icon="Clock"
+                            clockicon={<"ClockIcon" />}
                             title="Real-time Updates"
                             description="Get instant notifications and real-time updates on your appointments."
                         />
                         <FutureCard
-                            icon="Users"
+                            icon={<"UsersIcon" />}
                             title="Multi-tenant Support"
                             description="Manage multiple businesses or locations from a single platform."
                         />
                         <FutureCard
-                            icon="Sparkles"
+                            icon={<"SparklesIcon" />}
                             title="AI Recommendations"
                             description="Receive intelligent suggestions for optimal scheduling and service offerings."
                         />
                         <FutureCard
-                            icon="BarChart"
+                            icon={<"BarChart" />}
                             title="Analytics Dashboard"
                             description="Gain insights into your business performance with detailed analytics."
                         />
@@ -215,4 +231,4 @@ export default function LandingPage() {
             </div>
         </>
     )
-};
+}
