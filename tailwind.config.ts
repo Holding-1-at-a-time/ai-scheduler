@@ -9,15 +9,30 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        primary: {
+          light: "#0AE980",
+          DEFAULT: "#09C870",
+          dark: "#08A660",
+        },
+        gray: {
+          900: "#121212",
+          800: "#1F1F1F",
+          700: "#2E2E2E",
+          600: "#3D3D3D",
+          300: "#B0B0B0",
+        },
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)"],
-        mono: ["var(--font-geist-mono)"],
+        sans: ["Inter", "var", "sans-serif"],
+      },
+      boxShadow: {
+        lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+        xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
       },
     },
   },
   plugins: [],
 };
+
 export default config;
