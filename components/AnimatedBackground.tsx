@@ -1,50 +1,47 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import React, { useRef, useEffect } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-export function AnimatedBackground() {
+export default function AnimatedBackground() {
     const containerRef = useRef<HTMLDivElement>(null)
-
+    const torusRef = useRef<THREE.Mesh<THREE.BufferGeometry, THREE.Material | THREE.Material[], THREE.Object3DEventMap>>(null)
+    const cameraRef = useRef<THREE.PerspectiveCamera>(null)
+    
     useEffect(() => {
-        if (!containerRef.current) return
-    
-        const scene = new THREE.Scene()
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-        const renderer = new THREE.WebGLRenderer({ alpha: true })
-    
-        renderer.setSize(window.innerWidth, window.innerHeight)
-        containerRef.current.appendChild(renderer.domElement)
-    
-        const geometry = new THREE.TorusGeometry(10, 3, 16, 100)
-        const material = new THREE.MeshBasicMaterial({ color: 0x0AE98, wireframe: true })
-        const torus = new THREE.Mesh(geometry, material)
-    
-        scene.add(torus)
-        camera.position.z = 30
-    
-        const animate = () => {
-            requestAnimationFrame(animate)
-            torus.rotation.x += 0.01
-            torus.rotation.y += 0.005
-            renderer.render(scene, camera)
-        }
-    
-        animate()
-    
         const handleResize = () => {
-            camera.aspect = window.innerWidth / window.innerHeight
-            camera.updateProjectionMatrix()
-            renderer.setSize(window.innerWidth, window.innerHeight)
+            if (!cameraRef.current) return
+
+            cameraRef.current.aspect = window.innerWidth / window.innerHeight
+            cameraRef.current.updateProjectionMatrix()
         }
-    
-        const containerElement = containerRef.current; // Copy the ref value to a variable
-    
+
         window.addEventListener('resize', handleResize)
-    
+
         return () => {
             window.removeEventListener('resize', handleResize)
-            containerElement?.removeChild(renderer.domElement) // Use the copied variable
         }
     }, [])
-}
+
+    useFrame(() => {
+        if (!torusRef.current) return
+
+        torusRef.current.rotation.x += 0.01
+        torusRef.current.rotation.y += 0.005
+    })
+
+    return (
+        <div ref={containerRef} style={{ width: '100vw', height: '100vh' }}>
+            <Canvas>
+                <ambientLight />
+                <pointLight position={{ x: 10, y: 10, z: 10 }} />
+                <mesh ref={torusRef}>
+                    <torusGeometry args={[10, 3, 16, 100]} />
+                    <meshBasicMaterial color={0x0AE98} wireframe />
+                </mesh>
+                <perspectiveCamera ref={cameraRef} position={[0, 0, 30]} />
+            </Canvas>
+        </div>
+    );
+};
