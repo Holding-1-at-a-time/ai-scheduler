@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Confetti} from 'react-confetti'
+import Confetti from 'react-confetti'
 import { Button } from "@/components/ui/button"
 
 export function ConfirmationModal({

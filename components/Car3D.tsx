@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import * as THREE from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 export function Car3D() {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -23,11 +23,11 @@ export function Car3D() {
         scene.add(light)
 
         const loader = new GLTFLoader()
-        loader.load('/car.glb', (gltf) => {
+        loader.load('public/2021-BMW-M3/scene.gltf', (gltf: { scene: THREE.Object3D }) => {
             scene.add(gltf.scene)
             gltf.scene.scale.set(0.5, 0.5, 0.5)
             gltf.scene.position.set(0, -1, 0)
-        }, undefined, (error) => {
+        }, undefined, (error: any) => {
             console.error('An error occurred loading the 3D model:', error)
         })
 

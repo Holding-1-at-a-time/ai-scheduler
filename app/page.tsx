@@ -1,9 +1,18 @@
-import React from 'react'
+import React from 'react';
 
-const page = () => {
+const Page = () => {
+  const handleClick = () => {
+    throw new Error('Sentry Frontend Error');
+  };
+
   return (
-    <div>page</div>
-  )
-}
+    <div>
+      <p>Page</p>
+      <button type="button" onClick={handleClick}>
+        Throw error
+      </button>
+    </div>
+  );
+};
 
-export default page
+export default Page;

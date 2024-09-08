@@ -1,117 +1,128 @@
-import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
-import { OrganizationMembership, User } from "@clerk/nextjs/server";
-import { GenericMutationCtx, GenericTableInfo } from "convex/server";
+import { GenericId, v } from "convex/values";
+import { mutation, query, action } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
+import handler from "@/app/api/ollama/route";
+import { User } from "@clerk/nextjs/server";
+import { UserProfile } from "@clerk/nextjs";
 
-// Define a type for the user data
-interface UserData {
-  clerkId: string;
-  email: string;
-  name: string;
-  role: string;
-  tenantId: string;
-  password: string;
-}
+export const syncUser = mutation({
+  args: { 
+    clerkId: v.id('users'),
+    email: v.string(),
+    name: v.string(),
+    role: v.string(),
+    organizationId: v.id('organizations'),
+    clerkOrgId: v.string(),
+    userId: v.id('users'),
+    tenantId: v.id('tenants'),
+    organizationName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", q => q.eq("clerkId", args.clerkId))
+      .first();
 
-// Define the users table
-const usersTable = 'users';
-// Helper function to get a user by clerk ID
-async function getUserByUserId(
-  ctx: { db: { query: (table: string) => { withIndex: (index: string, query: (q: { eq: (k: string, v: string) => any }) => any }, } },
-  clerkId: string,
-): Promise<User | null> {
-  return await ctx.db
-    .query("users")
-    .withIndex("by_clerk_id", q => q.eq("clerkId", clerkId))
-    .first<User>();
-}
-/**
- * Get an organization by clerk org ID.
- *
- * @param ctx - The Convex context.
- * @param clerkOrgId - The Clerk organization ID.
- * @returns The organization if found, null otherwise.
- */
-async function getOrganizationByClerkOrgId(
-  ctx: { db: { query: (table: string) => { withIndex: (index: string, query: (q: { eq: (k: string, v: string) => any }) => any }, } },
-  organizationId: string,
-): Promise<OrganizationMembership | null> {
-  try {
-    const query = ctx.db.query("organizations");
-    const organizationQuery = query.withIndex("by_clerk_org_id", (q) => q.eq("organizationId", organizationId));
-    return await organizationQuery.first<OrganizationMembership>();
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
-
-// deleteUser mutation
-export const deleteUser = mutation({
-  args: { clerkId: v.string() },
-  handler: async (ctx, { clerkId }: { clerkId: string }) => {
-    const user = await getUserByClerkId(ctx, clerkId);
-    if (user) {
-      await ctx.db.delete(user._id);
+    if (existingUser) {
+      await ctx.db.patch(existingUser._id, {
+        email: args.email,
+        name: args.name,
+        role: args.role,
+        organizationId: args.organizationId,
+        clerkOrgId: args.clerkOrgId,
+        userId: args.userId,
+        tenantId: args.tenantId,
+        organizationName: args.organizationName
+      });
+    } else {
+      return await ctx.db.insert("users", {
+        clerkId: args.clerkId,
+        email: args.email,
+        name: args.name,
+        role: args.role,
+        organizationId: args.organizationId,
+        clerkOrgId: "",
+        userId: args.userId,
+        tenantId: args.tenantId,
+        organizationName: args.organizationName,
+        password: ""
+      });
     }
   },
 });
 
-// updateUserOrganization mutation
+export const deleteUser = mutation({
+  args: { clerkId: v.id('users') },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", q => q.eq("clerkId", args.clerkId))
+      .first();
+    if (user) {
+      await ctx.db.delete(user._id);
+      return "successful"
+    }
+  },
+});
+
 export const updateUserOrganization = mutation({
-  args: {
-    clerkUserId: v.string(),
+  args: { 
+    clerkId: v.id('users'),
     clerkOrgId: v.string(),
     role: v.string(),
   },
-  handler: async (ctx, { clerkUserId, clerkOrgId, role }: { clerkUserId: string; clerkOrgId: string; role: string }) => {
-    const user = await getUserByClerkId(ctx, clerkUserId);
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", q => q.eq("clerkId", args.clerkId))
+      .first();
+
     if (!user) {
       throw new Error("User not found");
     }
 
-    async function getOrganizationId(
-      ctx: GenericMutationCtx<{ usersOrganizations: GenericTableInfo & { document: { _id: string; }; }; }>,
-      clerkOrgId: string,
-    ): Promise<OrganizationMembership | null> {
-      const organization = await getOrganizationByClerkOrgId(ctx, clerkOrgId);
-      if (!organization) {
-        throw new Error("Organization not found");
-      }
-      return organization;
-    }
+    const organization = await ctx.db
+      .query("organizations")
+      .withIndex("by_clerk_org_id", q => q.eq("clerkOrgId", args.clerkOrgId))
+      .first();
 
-    const organization = await getOrganizationId(ctx, clerkOrgId);
     if (!organization) {
       throw new Error("Organization not found");
     }
 
-    await ctx.db.patch(user._id, {
-      organizationId: organization.clerkOrgId,
-      role,
+    return await ctx.db.patch(user._id, {
+      organizationId: organization._id,
+      role: args.role,
     });
   },
 });
 
-// removeUserFromOrganization mutation
 export const removeUserFromOrganization = mutation({
-  args: {
-    clerkUserId: v.string(),
+  args: { 
+    clerkId: v.id('users'),
     clerkOrgId: v.string(),
   },
-  handler: async (ctx, { clerkUserId, clerkOrgId }: { clerkUserId: string; clerkOrgId: string }) => {
-    const user = await getUserByUserId(ctx, clerkUserId);
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", q => q.eq("clerkId", args.clerkId))
+      .first();
+
     if (!user) {
       throw new Error("User not found");
     }
 
-    const organization = await getOrganizationId(ctx, getOrganizationId);
+    const organization = await ctx.db
+      .query("organizations")
+      .withIndex("by_clerk_org_id", q => q.eq("clerkOrgId", args.clerkOrgId))
+      .first();
+
     if (!organization) {
       throw new Error("Organization not found");
     }
 
-    if (user.organizationId === organization.id) {
-      await ctx.db.patch(user._id, {
+    if (user.organizationId === organization._id) {
+      return await ctx.db.patch(user._id, {
         organizationId: undefined,
         role: 'customer', // Reset to default role
       });
@@ -119,14 +130,29 @@ export const removeUserFromOrganization = mutation({
   },
 });
 
-// getUserByClerkId query
-export const getUserId = query({
-  args: { clerkId: v.string() },
-  handler: async (ctx, args: { clerkId: string }) => {
-    const user = await getUserByUserId(ctx, args.userId);
-    if (!user) {
-      throw new Error("User not found");
-    }
-    return user;
+export const getUserByClerkId = query({
+  args: { clerkId: v.id('users') },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", q => q.eq("clerkId", args.clerkId))
+      .first();
   },
 });
+
+export const handleProfileUpdate = mutation({
+  args: { clerkId: v.id('users'), firstName: v.string(), imageUrl: v.string(), phone: v.string(), address: v.string(), organizationName: v.string()},
+  handler: async (ctx, args) =>{
+    const identity = await ctx.auth.getUserIdentity();
+    const { tokenIdentifier, name, email,  } = identity!;
+    // Check if the user is authenticated
+    if (identity === null) {
+      throw new Error("Not authenticated");
+    }
+    // Update the user profile
+    return await ctx.db
+      .query("users")
+      .collect();
+  },
+});
+
